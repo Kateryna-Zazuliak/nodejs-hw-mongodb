@@ -1,6 +1,8 @@
 import { ContactsCollection } from '../db/models/contact.js';
 
+// export const getAllContacts = (userId) => ContactsCollection.find({ userId });
 export const getAllContacts = async ({
+  userId,
   page,
   perPage,
   sortBy,
@@ -8,8 +10,7 @@ export const getAllContacts = async ({
   filter,
 }) => {
   const skip = page > 0 ? (page - 1) * perPage : 0;
-  const contactQuery = ContactsCollection.find();
-
+  const contactQuery = ContactsCollection.find().where('userId').equals(userId);
   if (filter.type) {
     contactQuery.where('contactType').equals(filter.type);
   }
@@ -34,14 +35,16 @@ export const getAllContacts = async ({
   };
 };
 
-export const getContactById = (contactId) =>
-  ContactsCollection.findById(contactId);
+export const getContactById = (contactId, userId) =>
+  ContactsCollection.findOne({ _id: contactId, userId });
 
-export const createContact = (contactData) =>
-  ContactsCollection.create(contactData);
+export const createContact = (contactData, userId) =>
+  ContactsCollection.create({ userId, ...contactData });
 
-export const updateContact = (contactId, contactData) =>
-  ContactsCollection.findByIdAndUpdate(contactId, contactData, { new: true });
+export const updateContact = (contactId, contactData, userId) =>
+  ContactsCollection.findOneAndUpdate({ _id: contactId, userId }, contactData, {
+    new: true,
+  });
 
-export const deleteContact = (contactId) =>
-  ContactsCollection.findByIdAndDelete(contactId);
+export const deleteContact = (contactId, userId) =>
+  ContactsCollection.findOneAndDelete({ _id: contactId, userId });
