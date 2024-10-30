@@ -16,7 +16,7 @@ export const registerUserController = async (req, res) => {
     throw createHttpError(409, 'User with this email is already exist!');
   }
   await createUser(req.body);
-  res.json({
+  res.status(201).json({
     status: 201,
     message: 'Successfully registered a user!',
     data: {
