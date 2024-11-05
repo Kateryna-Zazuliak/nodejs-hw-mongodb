@@ -9,6 +9,7 @@ import {
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { auth } from '../middlewares/authenticate.js';
 import { isValidId } from '../middlewares/isValidId.js';
+import { upload } from '../middlewares/upload.js';
 
 const contactsRouter = Router();
 contactsRouter.use(auth);
@@ -18,9 +19,14 @@ contactsRouter.get(
   isValidId,
   ctrlWrapper(getContactByIdController),
 );
-contactsRouter.post('/', ctrlWrapper(createContactController));
+contactsRouter.post(
+  '/',
+  upload.single('photo'),
+  ctrlWrapper(createContactController),
+);
 contactsRouter.patch(
   '/:contactId',
+  upload.single('photo'),
   isValidId,
   ctrlWrapper(updateContactController),
 );

@@ -1,4 +1,6 @@
 import createHttpError from 'http-errors';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import {
   createContact,
   deleteContact,
@@ -13,6 +15,8 @@ import {
   createContactSchema,
   updateContactSchema,
 } from '../validation/contacts.js';
+import { env } from '../utils/env.js';
+import { uploadToCloudinary } from '../utils/uploadToCloudinary.js';
 
 export const getContactsController = async (req, res) => {
   const { page, perPage } = parsePaginationParams(req.query);
@@ -54,7 +58,21 @@ export const createContactController = async (req, res) => {
   if (error) {
     throw createHttpError(400, error.message);
   }
-  const newContact = await createContact(req.body, userId);
+  let photo = null;
+  if (typeof req.file !== 'undefined') {
+    if (env('ENABLE_CLOUDINARY') === 'true') {
+      const result = await uploadToCloudinary(req.file.path);
+      await fs.unlink(req.file.path);
+      photo = result.secure_url;
+    } else {
+      await fs.rename(
+        req.file.path,
+        path.resolve('src', 'public/photos', req.file.filename),
+      );
+      photo = `${env('APP_DOMAIN')}/photos/${req.file.filename}`;
+    }
+  }
+  const newContact = await createContact({ ...req.body, photo }, userId);
   res.status(201).json({
     status: 201,
     message: `Successfully create a contact!`,
@@ -69,7 +87,20 @@ export const updateContactController = async (req, res) => {
   if (error) {
     throw createHttpError(400, error.message);
   }
-  const result = await updateContact(contactId, req.body, userId);
+  let updateData = { ...req.body };
+  if (req.file) {
+    if (env('ENABLE_CLOUDINARY') === 'true') {
+      const result = await uploadToCloudinary(req.file.path);
+      await fs.unlink(req.file.path);
+      updateData.photo = result.secure_url;
+    } else {
+      await fs.rename(
+        req.file.path,
+        path.resolve('src', 'public/photos', req.file.filename),
+      );
+    }
+  }
+  const result = await updateContact(contactId, updateData, userId);
   if (!result) throw createHttpError(404, 'Contact not found');
   res.json({
     status: 200,
