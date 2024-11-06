@@ -59,8 +59,8 @@ export const createContactController = async (req, res) => {
     throw createHttpError(400, error.message);
   }
   let photo = null;
-  if (typeof req.file !== 'undefined') {
-    if (env('ENABLE_CLOUDINARY') === 'true') {
+  if (req.file) {
+    if (typeof req.file !== 'undefined') {
       const result = await uploadToCloudinary(req.file.path);
       await fs.unlink(req.file.path);
       photo = result.secure_url;
@@ -69,7 +69,7 @@ export const createContactController = async (req, res) => {
         req.file.path,
         path.resolve('src', 'public/photos', req.file.filename),
       );
-      photo = `${env('APP_DOMAIN')}/photos/${req.file.filename}`;
+      photo = `${env('APP_DOMAIN')}/public/photos/${req.file.filename}`;
     }
   }
   const newContact = await createContact({ ...req.body, photo }, userId);
@@ -87,20 +87,24 @@ export const updateContactController = async (req, res) => {
   if (error) {
     throw createHttpError(400, error.message);
   }
-  let updateData = { ...req.body };
+  let contactData = { ...req.body };
   if (req.file) {
     if (env('ENABLE_CLOUDINARY') === 'true') {
       const result = await uploadToCloudinary(req.file.path);
       await fs.unlink(req.file.path);
-      updateData.photo = result.secure_url;
+      contactData.photo = result.secure_url;
     } else {
       await fs.rename(
         req.file.path,
         path.resolve('src', 'public/photos', req.file.filename),
       );
+      contactData.photo = `${env('APP_DOMAIN')}/public/photos/${
+        req.file.filename
+      }`;
     }
   }
-  const result = await updateContact(contactId, updateData, userId);
+
+  const result = await updateContact(contactId, contactData, userId);
   if (!result) throw createHttpError(404, 'Contact not found');
   res.json({
     status: 200,
@@ -108,6 +112,7 @@ export const updateContactController = async (req, res) => {
     data: result,
   });
 };
+
 export const deleteContactController = async (req, res) => {
   const { _id: userId } = req.user;
   const { contactId } = req.params;
