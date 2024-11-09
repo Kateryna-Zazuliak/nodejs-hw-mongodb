@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'node:path';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import pino from 'pino-http';
@@ -7,6 +8,7 @@ import authRouter from './routers/auth.js';
 import contactsRouter from './routers/contacts.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { swaggerDocs } from './middlewares/swaggerDocs.js';
 
 const PORT = Number(env('PORT', '3000'));
 export const setupServer = () => {
@@ -21,6 +23,8 @@ export const setupServer = () => {
   );
 
   app.use(cors());
+  app.use('api-docs', swaggerDocs());
+  app.use('/avatars', express.static(path.resolve('src', 'public/avatars')));
   app.use(cookieParser());
   app.use('/auth', authRouter);
   app.use('/contacts', contactsRouter);

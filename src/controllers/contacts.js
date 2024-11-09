@@ -31,6 +31,9 @@ export const getContactsController = async (req, res) => {
     filter,
     userId,
   });
+  if (data.data.length === 0) {
+    throw createHttpError(404, 'Contacts not found');
+  }
   res.json({
     status: 200,
     message: 'Successfully found contacts!',
@@ -62,6 +65,8 @@ export const createContactController = async (req, res) => {
   if (req.file) {
     if (typeof req.file !== 'undefined') {
       const result = await uploadToCloudinary(req.file.path);
+      console.log(req.file.path);
+
       await fs.unlink(req.file.path);
       photo = result.secure_url;
     } else {

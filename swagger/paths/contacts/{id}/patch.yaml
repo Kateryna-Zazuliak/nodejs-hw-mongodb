@@ -1,0 +1,78 @@
+tags:
+  - Contacts
+summary: Update existing contact by id
+operationId: updateContact
+description: 'Update existing contact by id'
+security:
+  - bearerAuth: []
+parameters:
+  - in: path
+    name: id
+    required: true
+    schema:
+      type: string
+      example: 672a957ad0e643ced50c9d0d
+requestBody:
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        properties:
+          name:
+            description: "Contact's name"
+            type: string
+            example: Ivan Andrinenko
+          phoneNumber:
+            description: "Contact's phone number"
+            type: string
+            example: +380000400009
+          email:
+            description: "Contact's email"
+            type: string
+            example: ivan+2@example.com
+          isFavourite:
+            description: 'Whether this contact is marked as favourite'
+            type: boolean
+            default: false
+            example: false
+          contactType:
+            description: 'Type of the contact (e.g., work, home, personal)'
+            type: string
+            enum: ['work', 'home', 'personal']
+            default: personal
+            example: personal
+          userId:
+            description: "Contact's user id"
+            type: string
+            example: 6727b80847ee4d8366eaca74
+          photo:
+            description: "URL to the contact's photo"
+            type: string
+            default: null
+            example: https://res.cloudinary.com/dj9ztnk5t/image/upload/v1730844200/g1vn9ttk5rjd7vnvbfk0.jpg
+responses:
+  '200':
+    description: 'Successfully updated the contact by id'
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 200
+            message:
+              type: string
+              example: 'Successfully patched a contact with id 672a957ad0e643ced50c9d0d!'
+            data:
+              $ref: ../../../components/schemas/contact.yaml
+  '401':
+    $ref: ../../../components/responses/401.yaml
+  '404':
+    $ref: ../../../components/responses/404.yaml
+  '500':
+    $ref: ../../../components/responses/500.yaml
