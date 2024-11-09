@@ -23,7 +23,7 @@ export const setupServer = () => {
   );
 
   app.use(cors());
-  app.use('api-docs', swaggerDocs());
+  app.use('/api-docs', swaggerDocs());
   app.use('/avatars', express.static(path.resolve('src', 'public/avatars')));
   app.use(cookieParser());
   app.use('/auth', authRouter);
