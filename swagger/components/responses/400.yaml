@@ -22,7 +22,7 @@ content:
           properties:
             message:
               type: string
-              example: 'User with this email is already exist!'
+              example: 'Bad request'
             errors:
               type: array
               items:
